@@ -1,61 +1,74 @@
 
 <script>
+    import {results} from '../components/stores'
     import "./../../src/app.css";
     import Icon from '@iconify/svelte';
     import MenuBar from "./menus/MenuBar.svelte";
+    import SearchUi from '../components/SearchUi.svelte';
+  import ResultsUi from '../components/ResultsUI.svelte';
     
-  
+    let API_KEY = import.meta.env.VITE_API_KEY;
 
     let keyWord = '';
     export let data;
-    const {organicResultsData} = data
+    // const {results} = data
 
-    console.log(organicResultsData)
+    // console.log(results)
 
+    //fetch keyword data 
+    let searchResults ;
+    const getKeyWordData = async(keyWordInput)=>{
+        const data = await fetch(
+      `https://api.scrape-it.cloud/scrape/google?q=${keyWordInput}&filter=1&domain=google.com&gl=us&hl=en&deviceType=desktop`,
+      {
+        headers: {
+          "x-api-key": API_KEY,
+        },
+      }
+    );
+
+    const resultsData = await data.json();
+    const organicResultsData = resultsData['organicResults'];
+
+    results.update((prev)=>[...organicResultsData])
+    // searchResults = results['organicResults']
+
+    // console.log(searchResults)
+
+    results.subscribe((value)=>{
+        searchResults = value
+    })
+ 
+    //console log the results
+
+    console.log(searchResults)
+
+    }
 
   
 </script>
 
 
 
-<div class=" flex flex-col 
-justify-center items-center gap-6
-p-8 min-h-screen bg-blurry1 bg-cover relative
-
-" >
+<div class={`flex flex-col 
+ items-center ${typeof(searchResults)!=='undefined' ? '' : 'justify-center'} gap-6
+p-8 min-h-screen bg-blurry1 bg-cover relative`} 
+ >
     <MenuBar />
  
-    <!-- Display the results if they are available -->
-
-    {#if true}
-   <h2>Here is some data </h2>
-   {/if}
 
    <!-- Display search bar if no searches are done -->
 
-    {#if !true}
-    <h1 class="font-black text-textPrimary text-5xl ">Track Your Rankings </h1>
-    <h2 class="text-xl text-gray-600">Check any keywords positions in realtime</h2>
+    {#if typeof(searchResults)==='undefined'}
 
-    <div class="
-           flex 
-           outline outline-offset-2 outline-2 rounded-full
-           p-2 text-lg 
-           outline-blue-500 mt-10
-           cursor-pointer" >
-         <input type='text' bind:value={keyWord} placeholder="enter keyword" class="outline-none
-           p-2 text-lg 
-           cursor-pointer
-           text-gray-500
-           font-semibold
-           
-           "/>
-        <button on:click={''}><Icon icon="gg:arrow-right-o" width="36" height="36" class="text-blue-500 hover:text-blue-600"/></button>
-    </div>
+    <SearchUi getKeyWordData={getKeyWordData} keyWord={keyWord} searchResults={searchResults}  />
+  
+   {/if}
+
+   {#if typeof(searchResults)!=='undefined'}
+
+    <ResultsUi results={searchResults} keyword  ={keyWord} />
+  
    {/if}
   
 </div>
-
-<style>
-   
-</style>

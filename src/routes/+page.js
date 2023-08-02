@@ -1,20 +1,20 @@
 export const load = async ({ fetch }) => {
   let API_KEY = import.meta.env.VITE_API_KEY;
-  const res = await fetch(
-    "https://api.scrape-it.cloud/scrape/google?q=Coffee&filter=1&domain=google.com&gl=us&hl=en&deviceType=desktop",
-    {
-      headers: {
-        "x-api-key": API_KEY,
-      },
-    }
-  );
-  const results = await res.json();
-  const organicResultsData = results.organicResults;
+  const fetchResults = async (keyword) => {
+    const res = await fetch(
+      `https://api.scrape-it.cloud/scrape/google?q=${keyword}&filter=1&domain=google.com&gl=us&hl=en&deviceType=desktop`,
+      {
+        headers: {
+          "x-api-key": API_KEY,
+        },
+      }
+    );
+    const results = await res.json();
+    return results.organicResults;
+  };
 
   return {
-    name: "Joshua",
-    results,
-    organicResultsData,
+    results: fetchResults(),
   };
 };
 
